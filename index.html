@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<title>angular-filesystem testbed</title>
+	<script type='text/javascript' src="http://code.angularjs.org/angular-1.0.1.js"></script>
+	<script type='text/javascript' src="src/filesystem.js"></script>
+</head>
+<body ng-app="myApp">
+	<div ng-controller="MyCtrl">
+		{{message}}
+		
+		<div>
+			<button ng-click='writeVal()'>Write to Filesystem</button>
+			<button ng-click='readVal()'>Read from Filesystem</button>
+		</div>
+	</div>
+
+
+<script type='text/javascript'>//<![CDATA[ 
+
+angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($scope, $window, fileSystem) {
+    $scope.message = 'Click a button';
+    
+    $scope.writeVal = function() {
+        fileSystem.writeFile('msg.txt', $window.prompt('Enter message to write', 'Hello World'), 'text/plain').then(function(fs) {
+            $scope.message = "data written";
+        }, function(err) {
+            $window.alert('Error loading file');
+        });
+    };
+    
+    $scope.readVal = function() {
+        fileSystem.readFile('msg.txt').then(function(contents) {
+            $scope.message = contents;
+        }, function(err) {
+            $window.alert('Error loading file');
+        });
+    };
+});
+//]]>  
+
+</script>
+
+
+</body>
+
+
+</html>
+
