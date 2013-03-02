@@ -13,6 +13,7 @@
 			<button ng-click='readVal()'>Read from Filesystem</button>
 			<button ng-click='getUsageInfo()'>Get Usage</button>
 			<button ng-click='requestIncrease()'>Request Increase</button>
+			<button ng-click='getFiles("/")'>Show File List</button>
 		</div>
 
 		<div ng-repeat="message in messages">{{message}}</div>
@@ -23,42 +24,51 @@
 <script type='text/javascript'>//<![CDATA[ 
 
 angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($scope, $window, fileSystem) {
-    $scope.messages = ['Click a button'];
-    
-    $scope.writeVal = function() {
-        fileSystem.writeFile('msg.txt', $window.prompt('Enter message to write', 'Hello World'), 'text/plain').then(function(fs) {
-            $scope.messages.push("data written");
-        }, function(err) {
-            $window.alert(err);
-        });
-    };
-    
-    $scope.readVal = function() {
-        fileSystem.readFile('msg.txt').then(function(contents) {
-            $scope.messages.push(contents);
-        }, function(err) {
-            $window.alert(err);
-        });
-    };
-    
-    $scope.getUsageInfo = function() {
+	$scope.messages = ['Click a button'];
+	
+	$scope.writeVal = function() {
+		fileSystem.writeFile('msg2.txt', $window.prompt('Enter message to write', 'Hello World'), 'text/plain').then(function(fs) {
+			$scope.messages.push("data written");
+		}, function(err) {
+			$window.alert(err);
+		});
+	};
+	
+	$scope.readVal = function() {
+		fileSystem.readFile('msg2.txt').then(function(contents) {
+			$scope.messages.push(contents);
+		}, function(err) {
+			$window.alert(err);
+		});
+	};
+	
+	$scope.getUsageInfo = function() {
 		fileSystem.getCurrentUsage().then(function(usage) {
 			$scope.messages.push(usage.used + " / " + usage.quota);
 		}, function(err) {
 			$window.alert(err);
 		});
-    };
-    
-    $scope.requestIncrease = function() {
+	};
+	
+	$scope.requestIncrease = function() {
 		fileSystem.requestQuotaIncrease(15).then(function(newQuota) {
 			$scope.messages.push("New quota: " + (newQuota/1024/1024) + "mb");
 		}, function(err) {
 			$window.alert(err);
 		});
-    };
+	};
+	
+	$scope.getFiles = function(dir) {
+		fileSystem.getFolderContents(dir).then(function(entries) {
+			for(var i = 0; i<entries.length; i++) {
+				$scope.messages.push(entries[i].fullPath);
+			}
+		}, function(err) {
+			$window.alert(err);
+		});
+	};
 });
-//]]>  
-
+//]]>
 </script>
 
 

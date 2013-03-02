@@ -50,6 +50,26 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 			
 			return def.promise;
 		},
+		getFolderContents: function(dir) {
+			var def = $q.defer();
+			
+			fsDefer.promise.then(function(fs) {
+				fs.root.getDirectory(dir, {}, function(dirEntry) {
+					var dirReader = dirEntry.createReader();
+					dirReader.readEntries(function(entries) {
+						safeResolve(def, entries);
+					}, function(e) {
+						safeReject(def, "Error reading entries");
+					});
+				}, function(e) {
+					safeReject(def, "Error getting directory");
+				});
+			}, function(err) {
+				def.reject(err);
+			});
+			
+			return def.promise;
+		},
 		writeFile: function(fileName, contents, mimeType) {
 			var def = $q.defer();
 			
