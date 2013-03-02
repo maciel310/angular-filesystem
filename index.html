@@ -11,6 +11,8 @@
 		<div>
 			<button ng-click='writeVal()'>Write to Filesystem</button>
 			<button ng-click='readVal()'>Read from Filesystem</button>
+			<button ng-click='getUsageInfo()'>Get Usage</button>
+			<button ng-click='requestIncrease()'>Request Increase</button>
 		</div>
 
 		<div ng-repeat="message in messages">{{message}}</div>
@@ -27,7 +29,7 @@ angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($sc
         fileSystem.writeFile('msg.txt', $window.prompt('Enter message to write', 'Hello World'), 'text/plain').then(function(fs) {
             $scope.messages.push("data written");
         }, function(err) {
-            $window.alert('Error loading file');
+            $window.alert(err);
         });
     };
     
@@ -35,8 +37,24 @@ angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($sc
         fileSystem.readFile('msg.txt').then(function(contents) {
             $scope.messages.push(contents);
         }, function(err) {
-            $window.alert('Error loading file');
+            $window.alert(err);
         });
+    };
+    
+    $scope.getUsageInfo = function() {
+		fileSystem.getCurrentUsage().then(function(usage) {
+			$scope.messages.push(usage.used + " / " + usage.quota);
+		}, function(err) {
+			$window.alert(err);
+		});
+    };
+    
+    $scope.requestIncrease = function() {
+		fileSystem.requestQuotaIncrease(15).then(function(newQuota) {
+			$scope.messages.push("New quota: " + (newQuota/1024/1024) + "mb");
+		}, function(err) {
+			$window.alert(err);
+		});
     };
 });
 //]]>  

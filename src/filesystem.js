@@ -3,7 +3,7 @@ var fileSystem = angular.module('fileSystem',[]);
 fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 	var fsDefer = $q.defer();
 	
-	var QUOTA_MB = 5;
+	var DEFAULT_QUOTA_MB = 0;
 	
 	function safeResolve(deferral, message) {
 		$timeout(function() {
@@ -17,7 +17,7 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 		});
 	}
 
-	window.webkitStorageInfo.requestQuota(window.PERSISTENT, QUOTA_MB*1024*1024, function(grantedBytes) {
+	window.webkitStorageInfo.requestQuota(window.PERSISTENT, DEFAULT_QUOTA_MB*1024*1024, function(grantedBytes) {
 		window.webkitRequestFileSystem(window.PERSISTENT, grantedBytes, function(fs) {
 			safeResolve(fsDefer, fs);
 		}, function(e){
@@ -28,6 +28,28 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 	});
 	
 	var fileSystem = {
+		getCurrentUsage: function() {
+			var def = $q.defer();
+			
+			webkitStorageInfo.queryUsageAndQuota(window.PERSISTENT, function(used, quota) {
+				safeResolve(def, {'used': used, 'quota': quota});
+			}, function(e) {
+				safeReject(def, "Error getting quota information");
+			});
+			
+			return def.promise;
+		},
+		requestQuotaIncrease: function(newQuotaMB) {
+			var def = $q.defer();
+			
+			window.webkitStorageInfo.requestQuota(window.PERSISTENT, newQuotaMB*1024*1024, function(grantedBytes) {
+				safeResolve(def, grantedBytes);
+			}, function(e) {
+				safeReject(def, "Error requesting quota increase");
+			});
+			
+			return def.promise;
+		},
 		writeFile: function(fileName, contents, mimeType) {
 			var def = $q.defer();
 			
