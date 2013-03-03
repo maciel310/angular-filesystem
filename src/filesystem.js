@@ -5,12 +5,13 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 	
 	var DEFAULT_QUOTA_MB = 0;
 	
+	//wrap resolve/reject in an empty $timeout so it happens within the Angular call stack
+	//easier than .apply() since no scope is needed and doesn't error if already within an apply
 	function safeResolve(deferral, message) {
 		$timeout(function() {
 			deferral.resolve(message);
 		});
 	}
-	
 	function safeReject(deferral, message) {
 		$timeout(function() {
 			deferral.reject(message);
@@ -148,6 +149,23 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 					});
 				}, function(e) {
 					safeReject(def, "Error getting file");
+				});
+			}, function(err) {
+				def.reject(err);
+			});
+			
+			return def.promise;
+		},
+		deleteFile: function(fullPath) {
+			var def = $q.defer();
+			
+			fsDefer.promise.then(function(fs) {
+				fs.root.getFile(fullPath, {create:false}, function(fileEntry) {
+					fileEntry.remove(function() {
+						safeResolve(def, "");
+					}, function(err) {
+						safeReject(def, err);
+					});
 				});
 			}, function(err) {
 				def.reject(err);

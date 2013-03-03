@@ -14,6 +14,7 @@
 			<button ng-click='getUsageInfo()'>Get Usage</button>
 			<button ng-click='requestIncrease()'>Request Increase</button>
 			<button ng-click='getFiles("/")'>Show File List</button>
+			<button ng-click='deleteFile("/msg2.txt")'>Delete File</button>
 		</div>
 
 		<div ng-repeat="message in messages">{{message}}</div>
@@ -63,6 +64,14 @@ angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($sc
 			for(var i = 0; i<entries.length; i++) {
 				$scope.messages.push(entries[i].fullPath);
 			}
+		}, function(err) {
+			$window.alert(err);
+		});
+	};
+	
+	$scope.deleteFile = function(path) {
+		fileSystem.deleteFile(path).then(function() {
+			$scope.messages.push(path + " deleted");
 		}, function(err) {
 			$window.alert(err);
 		});
