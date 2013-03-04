@@ -71,14 +71,24 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 			
 			return def.promise;
 		},
-		writeFile: function(fileName, contents, mimeType) {
+		writeText: function(fileName, contents) {
+			//create text blob from string
+			var blob = new Blob([contents], {type: 'text/plain'});
+			
+			return fileSystem.writeBlob(fileName, blob);
+		},
+		writeArrayBuffer: function(fileName, buf, mimeString) {
+			var blob = new Blob([new Uint8Array(buf)], {type: mimeString});
+			
+			return fileSystem.writeBlob(fileName, blob);
+		},
+		writeBlob: function(fileName, blob) {
 			var def = $q.defer();
 			
 			fsDefer.promise.then(function(fs) {
 				
 				fs.root.getFile(fileName, {create: true}, function(fileEntry) {
 					
-					// Create a FileWriter object for our FileEntry (log.txt).
 					fileEntry.createWriter(function(fileWriter) {
 						var truncated = false;
 						fileWriter.onwriteend = function(e) {
@@ -94,9 +104,6 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 						fileWriter.onerror = function(e) {
 							safeReject(def, 'Write failed: ' + e.toString());
 						};
-						
-						// Create a new Blob and write it to log.txt.
-						var blob = new Blob([contents], {type: mimeType});
 						
 						fileWriter.write(blob);
 						

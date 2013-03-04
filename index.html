@@ -15,20 +15,19 @@
 			<button ng-click='requestIncrease()'>Request Increase</button>
 			<button ng-click='getFiles("/")'>Show File List</button>
 			<button ng-click='deleteFile("/msg2.txt")'>Delete File</button>
+			<button ng-click='cacheFile("/bumper-board/know.mp3")'>Cache File</button>
 		</div>
-
-		<div ng-repeat="message in messages">{{message}}</div>
 		
+		<div ng-repeat="message in messages">{{message}}</div>
 	</div>
-
-
+	
 <script type='text/javascript'>//<![CDATA[ 
 
-angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($scope, $window, fileSystem) {
+angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($scope, $window, $timeout, fileSystem) {
 	$scope.messages = ['Click a button'];
 	
 	$scope.writeVal = function() {
-		fileSystem.writeFile('msg2.txt', $window.prompt('Enter message to write', 'Hello World'), 'text/plain').then(function(fs) {
+		fileSystem.writeText('msg2.txt', $window.prompt('Enter message to write', 'Hello World')).then(function(fs) {
 			$scope.messages.push("data written");
 		}, function(err) {
 			$window.alert(err);
@@ -76,11 +75,27 @@ angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($sc
 			$window.alert(err);
 		});
 	};
+	
+	$scope.cacheFile = function(url) {
+		var xhr =new XMLHttpRequest();
+		xhr.open('GET',url,true);
+		xhr.responseType ='arraybuffer';
+		
+		xhr.onload=function(e){
+			$timeout(function() {
+				fileSystem.writeArrayBuffer("know.mp3", xhr.response, "audio/mp3").then(function() {
+					$scope.messages.push("Cached file");
+				}, function(err) {
+					$window.alert(err);
+				});
+			});
+		};
+		
+		xhr.send();
+	};
 });
 //]]>
 </script>
-
-
 </body>
 
 
