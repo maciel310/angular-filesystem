@@ -5,21 +5,6 @@
 	<title>angular-filesystem testbed</title>
 	<script type='text/javascript' src="http://code.angularjs.org/angular-1.0.1.js"></script>
 	<script type='text/javascript' src="src/filesystem.js"></script>
-</head>
-<body ng-app="myApp">
-	<div ng-controller="MyCtrl">
-		<div>
-			<button ng-click='writeVal()'>Write to Filesystem</button>
-			<button ng-click='readVal()'>Read from Filesystem</button>
-			<button ng-click='getUsageInfo()'>Get Usage</button>
-			<button ng-click='requestIncrease()'>Request Increase</button>
-			<button ng-click='getFiles("/")'>Show File List</button>
-			<button ng-click='deleteFile("/msg2.txt")'>Delete File</button>
-			<button ng-click='cacheFile("/bumper-board/know.mp3")'>Cache File</button>
-		</div>
-		
-		<div ng-repeat="message in messages">{{message}}</div>
-	</div>
 	
 <script type='text/javascript'>//<![CDATA[ 
 
@@ -83,7 +68,7 @@ angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($sc
 		
 		xhr.onload=function(e){
 			$timeout(function() {
-				fileSystem.writeArrayBuffer("know.mp3", xhr.response, "audio/mp3").then(function() {
+				fileSystem.writeArrayBuffer("know.mp3", xhr.response, "audio/mpeg").then(function() {
 					$scope.messages.push("Cached file");
 				}, function(err) {
 					$window.alert(err);
@@ -96,6 +81,27 @@ angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($sc
 });
 //]]>
 </script>
+
+</head>
+<body ng-app="myApp">
+	<div ng-controller="MyCtrl" style='display: inline-block; vertical-align: top; width: 60%'>
+		<div>
+			<button ng-click='writeVal()'>Write to Filesystem</button>
+			<button ng-click='readVal()'>Read from Filesystem</button>
+			<button ng-click='getUsageInfo()'>Get Usage</button>
+			<button ng-click='requestIncrease()'>Request Increase</button>
+			<button ng-click='getFiles("/")'>Show File List</button>
+			<button ng-click='deleteFile("/msg2.txt")'>Delete File</button>
+			<button ng-click='cacheFile("/bumper-board/know.mp3")'>Cache File</button>
+		</div>
+		
+		<div ng-repeat="message in messages">{{message}}</div>
+	</div>
+	
+	<div style='display: inline-block; vertical-align: top; width: 35%'>
+		<button onclick='document.querySelector("iframe").src+=""'>Reload</button>
+		<iframe src='filesystem:http://anthonymaciel.com/persistent/' style="width: 100%; height: 800px; border: none;" />
+	</div>
 </body>
 
 
