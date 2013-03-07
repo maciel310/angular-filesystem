@@ -55,7 +55,7 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 			var def = $q.defer();
 			
 			fsDefer.promise.then(function(fs) {
-				fs.root.getDirectory(dir, {}, function(dirEntry) {
+				fs.root.getDirectory(fs.root.fullPath + dir, {}, function(dirEntry) {
 					var dirReader = dirEntry.createReader();
 					dirReader.readEntries(function(entries) {
 						safeResolve(def, entries);
@@ -65,6 +65,32 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 				}, function(e) {
 					safeReject(def, "Error getting directory");
 				});
+			}, function(err) {
+				def.reject(err);
+			});
+			
+			return def.promise;
+		},
+		createFolder: function(path) {
+			//remove leading slash if present
+			path = path.replace(/^\//, "");
+			
+			var def = $q.defer();
+			
+			function createDir(rootDir, folders) {
+				rootDir.getDirectory(folders[0], {create: true}, function(dirEntry) {
+					if (folders.length) {
+						createDir(dirEntry, folders.slice(1));
+					} else {
+						safeResolve(def, dirEntry);
+					}
+				}, function(e) {
+					safeReject(def, "Error creating directory");
+				});
+			}
+			
+			fsDefer.promise.then(function(fs) {
+				createDir(fs.root, path.split('/'));
 			}, function(err) {
 				def.reject(err);
 			});

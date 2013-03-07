@@ -62,13 +62,20 @@ angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($sc
 	};
 	
 	$scope.cacheFile = function(url) {
+		var filename = url.substr(url.lastIndexOf('/')+1);
+		var path = url.substr(0, url.lastIndexOf('/')+1);
+		
+		var createFolderPromise = fileSystem.createFolder(path);
+		
 		var xhr =new XMLHttpRequest();
 		xhr.open('GET',url,true);
 		xhr.responseType ='arraybuffer';
 		
 		xhr.onload=function(e){
 			$timeout(function() {
-				fileSystem.writeArrayBuffer("know.mp3", xhr.response, "audio/mpeg").then(function() {
+				createFolderPromise.then(function() {
+					return fileSystem.writeArrayBuffer(url, xhr.response, "audio/mpeg");
+				}).then(function() {
 					$scope.messages.push("Cached file");
 				}, function(err) {
 					$window.alert(err);
@@ -77,6 +84,14 @@ angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($sc
 		};
 		
 		xhr.send();
+	};
+	
+	$scope.createFolder = function(path) {
+		fileSystem.createFolder(path).then(function(dirEntry) {
+			$scope.messages.push(dirEntry.fullPath);
+		}, function(err) {
+			$window.alert(err);
+		});
 	};
 });
 //]]>
@@ -93,6 +108,7 @@ angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($sc
 			<button ng-click='getFiles("/")'>Show File List</button>
 			<button ng-click='deleteFile("/msg2.txt")'>Delete File</button>
 			<button ng-click='cacheFile("/bumper-board/know.mp3")'>Cache File</button>
+			<button ng-click='createFolder("documents/blah/")'>Create Folders</button>
 		</div>
 		
 		<div ng-repeat="message in messages">{{message}}</div>
