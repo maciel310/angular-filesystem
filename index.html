@@ -15,7 +15,8 @@ angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($sc
 		fileSystem.writeText('msg2.txt', $window.prompt('Enter message to write', 'Hello World')).then(function(fs) {
 			$scope.messages.push("data written");
 		}, function(err) {
-			$window.alert(err);
+			console.log(err);
+			$window.alert(err.text);
 		});
 	};
 	
@@ -23,7 +24,8 @@ angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($sc
 		fileSystem.readFile('msg2.txt').then(function(contents) {
 			$scope.messages.push(contents);
 		}, function(err) {
-			$window.alert(err);
+			console.log(err);
+			$window.alert(err.text);
 		});
 	};
 	
@@ -31,7 +33,8 @@ angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($sc
 		fileSystem.getCurrentUsage().then(function(usage) {
 			$scope.messages.push(usage.used + " / " + usage.quota);
 		}, function(err) {
-			$window.alert(err);
+			console.log(err);
+			$window.alert(err.text);
 		});
 	};
 	
@@ -39,7 +42,8 @@ angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($sc
 		fileSystem.requestQuotaIncrease(150).then(function(newQuota) {
 			$scope.messages.push("New quota: " + (newQuota/1024/1024) + "mb");
 		}, function(err) {
-			$window.alert(err);
+			console.log(err);
+			$window.alert(err.text);
 		});
 	};
 	
@@ -49,7 +53,8 @@ angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($sc
 				$scope.messages.push(entries[i].fullPath);
 			}
 		}, function(err) {
-			$window.alert(err);
+			console.log(err);
+			$window.alert(err.text);
 		});
 	};
 	
@@ -57,7 +62,8 @@ angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($sc
 		fileSystem.deleteFile(path).then(function() {
 			$scope.messages.push(path + " deleted");
 		}, function(err) {
-			$window.alert(err);
+			console.log(err);
+			$window.alert(err.text);
 		});
 	};
 	
@@ -78,7 +84,8 @@ angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($sc
 				}).then(function() {
 					$scope.messages.push("Cached file");
 				}, function(err) {
-					$window.alert(err);
+					console.log(err);
+					$window.alert(err.text);
 				});
 			});
 		};
@@ -90,7 +97,8 @@ angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($sc
 		fileSystem.createFolder(path).then(function(dirEntry) {
 			$scope.messages.push(dirEntry.fullPath);
 		}, function(err) {
-			$window.alert(err);
+			console.log(err);
+			$window.alert(err.text);
 		});
 	};
 });

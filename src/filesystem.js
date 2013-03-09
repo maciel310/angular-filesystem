@@ -22,10 +22,10 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 		window.webkitRequestFileSystem(window.PERSISTENT, grantedBytes, function(fs) {
 			safeResolve(fsDefer, fs);
 		}, function(e){
-			safeReject(fsDefer, "Error requesting File System access");
+			safeReject(fsDefer, {text: "Error requesting File System access", obj: e});
 		});
 	}, function(e) {
-		safeReject(fsDefer, "Error requesting Quota");
+		safeReject(fsDefer, {text: "Error requesting Quota", obj: e});
 	});
 	
 	var fileSystem = {
@@ -35,7 +35,7 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 			webkitStorageInfo.queryUsageAndQuota(window.PERSISTENT, function(used, quota) {
 				safeResolve(def, {'used': used, 'quota': quota});
 			}, function(e) {
-				safeReject(def, "Error getting quota information");
+				safeReject(def, {text: "Error getting quota information", obj: e});
 			});
 			
 			return def.promise;
@@ -46,7 +46,7 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 			window.webkitStorageInfo.requestQuota(window.PERSISTENT, newQuotaMB*1024*1024, function(grantedBytes) {
 				safeResolve(def, grantedBytes);
 			}, function(e) {
-				safeReject(def, "Error requesting quota increase");
+				safeReject(def, {text: "Error requesting quota increase", obj: e});
 			});
 			
 			return def.promise;
@@ -60,10 +60,10 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 					dirReader.readEntries(function(entries) {
 						safeResolve(def, entries);
 					}, function(e) {
-						safeReject(def, "Error reading entries");
+						safeReject(def, {text: "Error reading entries", obj: e});
 					});
 				}, function(e) {
-					safeReject(def, "Error getting directory");
+					safeReject(def, {text: "Error getting directory", obj: e});
 				});
 			}, function(err) {
 				def.reject(err);
@@ -85,7 +85,7 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 						safeResolve(def, dirEntry);
 					}
 				}, function(e) {
-					safeReject(def, "Error creating directory");
+					safeReject(def, {text: "Error creating directory", obj: e});
 				});
 			}
 			
@@ -128,17 +128,17 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 						};
 						
 						fileWriter.onerror = function(e) {
-							safeReject(def, 'Write failed: ' + e.toString());
+							safeReject(def, {text: 'Write failed', obj: e});
 						};
 						
 						fileWriter.write(blob);
 						
 					}, function(e) {
-						safeReject(def, "Error creating file");
+						safeReject(def, {text: "Error creating file", obj: e});
 					});
 					
 				}, function(e) {
-					safeReject(def, "Error getting file");
+					safeReject(def, {text: "Error getting file", obj: e});
 				});
 			
 			}, function(err) {
@@ -173,15 +173,15 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 						};
 						
 						reader.onerror = function(e) {
-							safeReject(def, "Error reading file");
+							safeReject(def, {text: "Error reading file", obj: e});
 						};
 						
 						reader.readAsText(file);
 					}, function(e) {
-						safeReject(def, "Error getting file");
+						safeReject(def, {text: "Error getting file", obj: e});
 					});
 				}, function(e) {
-					safeReject(def, "Error getting file");
+					safeReject(def, {text: "Error getting file", obj: e});
 				});
 			}, function(err) {
 				def.reject(err);
@@ -196,8 +196,8 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 				fs.root.getFile(fullPath, {create:false}, function(fileEntry) {
 					fileEntry.remove(function() {
 						safeResolve(def, "");
-					}, function(err) {
-						safeReject(def, err);
+					}, function(e) {
+						safeReject(def, {text: "Error deleting file", obj: e});
 					});
 				});
 			}, function(err) {
