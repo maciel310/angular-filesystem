@@ -97,18 +97,24 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 			
 			return def.promise;
 		},
-		writeText: function(fileName, contents) {
+		writeText: function(fileName, contents, append) {
+			append = (typeof append == 'undefined' ? false : append);
+			
 			//create text blob from string
 			var blob = new Blob([contents], {type: 'text/plain'});
 			
-			return fileSystem.writeBlob(fileName, blob);
+			return fileSystem.writeBlob(fileName, blob, append);
 		},
-		writeArrayBuffer: function(fileName, buf, mimeString) {
+		writeArrayBuffer: function(fileName, buf, mimeString, append) {
+			append = (typeof append == 'undefined' ? false : append);
+			
 			var blob = new Blob([new Uint8Array(buf)], {type: mimeString});
 			
-			return fileSystem.writeBlob(fileName, blob);
+			return fileSystem.writeBlob(fileName, blob, append);
 		},
-		writeBlob: function(fileName, blob) {
+		writeBlob: function(fileName, blob, append) {
+			append = (typeof append == 'undefined' ? false : append);
+			
 			var def = $q.defer();
 			
 			fsDefer.promise.then(function(fs) {
@@ -116,6 +122,10 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 				fs.root.getFile(fileName, {create: true}, function(fileEntry) {
 					
 					fileEntry.createWriter(function(fileWriter) {
+						if(append) {
+							fileWriter.seek(fileWriter.length);
+						}
+						
 						var truncated = false;
 						fileWriter.onwriteend = function(e) {
 							//truncate all data after current position
@@ -140,17 +150,6 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 				}, function(e) {
 					safeReject(def, {text: "Error getting file", obj: e});
 				});
-			
-			}, function(err) {
-				def.reject(err);
-			});
-			
-			return def.promise;
-		},
-		appendToFile: function(fileName, contents, mimeType) {
-			var def = $q.defer();
-			
-			fsDefer.promise.then(function(fs) {
 			
 			}, function(err) {
 				def.reject(err);
