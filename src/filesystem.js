@@ -157,8 +157,10 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 			
 			return def.promise;
 		},
-		readFile: function(fileName) {
+		readFile: function(fileName, returnType) {
 			var def = $q.defer();
+			
+			returnType = returnType || "text";
 			
 			fsDefer.promise.then(function(fs) {
 				fs.root.getFile(fileName, {}, function(fileEntry) {
@@ -175,7 +177,11 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 							safeReject(def, {text: "Error reading file", obj: e});
 						};
 						
-						reader.readAsText(file);
+						if(returnType == 'arraybuffer') {
+							reader.readAsArrayBuffer(file);
+						} else { //text
+							reader.readAsText(file);
+						}
 					}, function(e) {
 						safeReject(def, {text: "Error getting file", obj: e});
 					});
