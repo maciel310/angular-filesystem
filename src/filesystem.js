@@ -177,10 +177,19 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 							safeReject(def, {text: "Error reading file", obj: e});
 						};
 						
-						if(returnType == 'arraybuffer') {
-							reader.readAsArrayBuffer(file);
-						} else { //text
-							reader.readAsText(file);
+						
+						switch(returnType) {
+							case 'arraybuffer':
+								reader.readAsArrayBuffer(file);
+								break;
+							case 'binarystring':
+								reader.readAsBinaryString(file);
+								break;
+							case 'dataurl':
+								reader.readAsDataURL(file);
+								break;
+							default:
+								reader.readAsText(file);
 						}
 					}, function(e) {
 						safeReject(def, {text: "Error getting file", obj: e});
