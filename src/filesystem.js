@@ -97,6 +97,25 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 			
 			return def.promise;
 		},
+		deleteFolder: function(path) {
+			var def = $q.defer();
+			
+			fsDefer.promise.then(function(fs) {
+				fs.root.getDirectory(path, {}, function(dirEntry) {
+					dirEntry.remove(function() {
+						safeResolve(def, "");
+					}, function(e) {
+						safeReject(def, {text: "Error removing directory", obj: e});
+					});
+				}, function(e) {
+					safeReject(def, {text: "Error getting directory", obj: e});
+				});
+			}, function(err) {
+				def.reject(err);
+			});
+			
+			return def.promise;
+		},
 		writeText: function(fileName, contents, append) {
 			append = (typeof append == 'undefined' ? false : append);
 			
