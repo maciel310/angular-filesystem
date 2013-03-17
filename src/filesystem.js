@@ -97,16 +97,25 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 			
 			return def.promise;
 		},
-		deleteFolder: function(path) {
+		deleteFolder: function(path, recursive) {
+			recursive = (typeof recursive == 'undefined' ? false : recursive);
+			
 			var def = $q.defer();
 			
 			fsDefer.promise.then(function(fs) {
 				fs.root.getDirectory(path, {}, function(dirEntry) {
-					dirEntry.remove(function() {
+					var success = function() {
 						safeResolve(def, "");
-					}, function(e) {
+					};
+					var err = function(e) {
 						safeReject(def, {text: "Error removing directory", obj: e});
-					});
+					};
+					
+					if(recursive) {
+						dirEntry.removeRecursively(success, err);
+					} else {
+						dirEntry.remove(success, err);
+					}
 				}, function(e) {
 					safeReject(def, {text: "Error getting directory", obj: e});
 				});

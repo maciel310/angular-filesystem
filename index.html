@@ -11,8 +11,10 @@
 angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($scope, $window, $timeout, fileSystem) {
 	$scope.messages = ['Click a button'];
 	
+	var txtFileName = "documents/blah/msg2.txt";
+	
 	$scope.writeVal = function() {
-		fileSystem.writeText('msg2.txt', $window.prompt('Enter message to write', 'Hello World')).then(function(fs) {
+		fileSystem.writeText(txtFileName, $window.prompt('Enter message to write', 'Hello World')).then(function(fs) {
 			$scope.messages.push("data written");
 		}, function(err) {
 			console.log(err);
@@ -21,7 +23,7 @@ angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($sc
 	};
 	
 	$scope.readVal = function() {
-		fileSystem.readFile('msg2.txt').then(function(contents) {
+		fileSystem.readFile(txtFileName).then(function(contents) {
 			$scope.messages.push(contents);
 		}, function(err) {
 			console.log(err);
@@ -60,6 +62,15 @@ angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($sc
 	
 	$scope.deleteFile = function(path) {
 		fileSystem.deleteFile(path).then(function() {
+			$scope.messages.push(path + " deleted");
+		}, function(err) {
+			console.log(err);
+			$window.alert(err.text);
+		});
+	};
+	
+	$scope.deleteFolder = function(path, recursive) {
+		fileSystem.deleteFolder(path, recursive).then(function() {
 			$scope.messages.push(path + " deleted");
 		}, function(err) {
 			console.log(err);
@@ -117,6 +128,7 @@ angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($sc
 			<button ng-click='deleteFile("/msg2.txt")'>Delete File</button>
 			<button ng-click='cacheFile("/bumper-board/know.mp3")'>Cache File</button>
 			<button ng-click='createFolder("documents/blah/")'>Create Folders</button>
+			<button ng-click='deleteFolder("documents/", true)'>Delete Folder</button>
 		</div>
 		
 		<div ng-repeat="message in messages">{{message}}</div>
