@@ -8,10 +8,10 @@
 	
 <script type='text/javascript'>//<![CDATA[ 
 
-angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($scope, $window, $timeout, fileSystem) {
+angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($scope, $window, $timeout, $q, fileSystem) {
 	$scope.messages = ['Click a button'];
 	
-	var txtFileName = "documents/blah/msg2.txt";
+	var txtFileName = "msg2.txt";
 	
 	$scope.writeVal = function() {
 		fileSystem.writeText(txtFileName, $window.prompt('Enter message to write', 'Hello World')).then(function(fs) {
@@ -78,6 +78,32 @@ angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($sc
 		});
 	};
 	
+	$scope.clearFS = function() {
+		fileSystem.getFolderContents('/').then(function(entries) {
+			var deletePromises = [];
+			
+			for(var i = 0; i<entries.length; i++) {
+				var p;
+				var e = entries[i];
+				
+				if(e.isDirectory) {
+					p = fileSystem.deleteFolder(e.fullPath, true);
+				} else {
+					p = fileSystem.deleteFile(e.fullPath);
+				}
+				
+				deletePromises.push(p);
+			}
+			
+			return $q.all(deletePromises);
+		}).then(function() {
+			$scope.messages.push("Filesystem Cleared.");
+		}, function(err) {
+			console.log(err);
+			$window.alert(err.text);
+		});
+	};
+	
 	$scope.cacheFile = function(url) {
 		var filename = url.substr(url.lastIndexOf('/')+1);
 		var path = url.substr(0, url.lastIndexOf('/')+1);
@@ -129,6 +155,7 @@ angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($sc
 			<button ng-click='cacheFile("/bumper-board/know.mp3")'>Cache File</button>
 			<button ng-click='createFolder("documents/blah/")'>Create Folders</button>
 			<button ng-click='deleteFolder("documents/", true)'>Delete Folder</button>
+			<button ng-click='clearFS()'>Clear Local Filesystem</button>
 		</div>
 		
 		<div ng-repeat="message in messages">{{message}}</div>
