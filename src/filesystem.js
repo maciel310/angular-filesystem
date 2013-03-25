@@ -125,6 +125,25 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 			
 			return def.promise;
 		},
+		writeFileInput: function(filename, file, mimeString) {
+			var def = $q.defer();
+			
+			var reader = new FileReader();
+			
+			reader.onload = function(e) {
+				var buf = e.target.result;
+				
+				fileSystem.writeArrayBuffer(filename, buf, mimeString).then(function() {
+					safeResolve(def, "");
+				}, function(e) {
+					safeReject(def, e);
+				});
+			};
+			
+			reader.readAsArrayBuffer(file);
+			
+			return def.promise;
+		},
 		writeText: function(fileName, contents, append) {
 			append = (typeof append == 'undefined' ? false : append);
 			
