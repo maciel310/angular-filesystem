@@ -130,6 +130,17 @@ angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($sc
 		xhr.send();
 	};
 	
+	$scope.saveFileInput = function() {
+		var f = document.querySelector('#fileInput').files[0];
+		
+		fileSystem.writeFileInput(f.name, f, "text/html").then(function() {
+			$scope.messages.push("Copied file to FileSystem");
+		}, function(err) {
+			console.log(err);
+			$window.alert(err.text);
+		});
+	};
+	
 	$scope.createFolder = function(path) {
 		fileSystem.createFolder(path).then(function(dirEntry) {
 			$scope.messages.push(dirEntry.fullPath);
@@ -156,6 +167,10 @@ angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($sc
 			<button ng-click='createFolder("documents/blah/")'>Create Folders</button>
 			<button ng-click='deleteFolder("documents/", true)'>Delete Folder</button>
 			<button ng-click='clearFS()'>Clear Local Filesystem</button>
+		</div>
+		<div>
+			<input type='file' id='fileInput'/>
+			<button ng-click='saveFileInput()'>Save to FS</button>
 		</div>
 		
 		<div ng-repeat="message in messages">{{message}}</div>

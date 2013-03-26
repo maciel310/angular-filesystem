@@ -133,10 +133,12 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 			reader.onload = function(e) {
 				var buf = e.target.result;
 				
-				fileSystem.writeArrayBuffer(filename, buf, mimeString).then(function() {
-					safeResolve(def, "");
-				}, function(e) {
-					safeReject(def, e);
+				$timeout(function() {
+					fileSystem.writeArrayBuffer(filename, buf, mimeString).then(function() {
+						safeResolve(def, "");
+					}, function(e) {
+						safeReject(def, e);
+					});
 				});
 			};
 			
