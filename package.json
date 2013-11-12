@@ -1,6 +1,6 @@
 {
 	"name": "angular-filesystem",
-	"version": "0.1",
+	"version": "0.1.0beta",
 	"author": "maciel310",
 	"description": "AngularJS Service implementation of the Web FileSystem API",
 	"contributors": [
