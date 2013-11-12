@@ -212,13 +212,12 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 			fsDefer.promise.then(function(fs) {
 				fs.root.getFile(fileName, {}, function(fileEntry) {
 					// Get a File object representing the file,
-					// then use FileReader to read its contents.
 					fileEntry.file(function(file) {
 						safeResolve(def, file);
 					});
 				});
 			}, function(err) {
-				def.reject(err);
+				safeReject(def, err);
 			});
 
 			return def.promise;
