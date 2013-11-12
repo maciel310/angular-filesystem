@@ -206,6 +206,23 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 			
 			return def.promise;
 		},
+		getFile: function(fileName) {
+			var def = $q.defer();
+
+			fsDefer.promise.then(function(fs) {
+				fs.root.getFile(fileName, {}, function(fileEntry) {
+					// Get a File object representing the file,
+					// then use FileReader to read its contents.
+					fileEntry.file(function(file) {
+						safeResolve(def, file);
+					});
+				});
+			}, function(err) {
+				def.reject(err);
+			});
+
+			return def.promise;
+		},
 		readFile: function(fileName, returnType) {
 			var def = $q.defer();
 			
