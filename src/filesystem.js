@@ -214,10 +214,12 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 					// Get a File object representing the file,
 					fileEntry.file(function(file) {
 						safeResolve(def, file);
+					}, function(e) {
+						safeReject(def, {text: "Error creating file", obj: e});
 					});
 				});
 			}, function(err) {
-				safeReject(def, err);
+				def.reject(err);
 			});
 
 			return def.promise;
