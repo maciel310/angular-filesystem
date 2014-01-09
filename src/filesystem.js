@@ -18,17 +18,22 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 		});
 	}
 
-	window.webkitStorageInfo.requestQuota(window.PERSISTENT, DEFAULT_QUOTA_MB*1024*1024, function(grantedBytes) {
-		window.webkitRequestFileSystem(window.PERSISTENT, grantedBytes, function(fs) {
-			safeResolve(fsDefer, fs);
-		}, function(e){
-			safeReject(fsDefer, {text: "Error requesting File System access", obj: e});
+	if (angular.isDefined(window.webkitStorageInfo)) {
+		window.webkitStorageInfo.requestQuota(window.PERSISTENT, DEFAULT_QUOTA_MB*1024*1024, function(grantedBytes) {
+			window.webkitRequestFileSystem(window.PERSISTENT, grantedBytes, function(fs) {
+				safeResolve(fsDefer, fs);
+			}, function(e){
+				safeReject(fsDefer, {text: "Error requesting File System access", obj: e});
+			});
+		}, function(e) {
+			safeReject(fsDefer, {text: "Error requesting Quota", obj: e});
 		});
-	}, function(e) {
-		safeReject(fsDefer, {text: "Error requesting Quota", obj: e});
-	});
+	}
 	
 	var fileSystem = {
+		isSupported: function() {
+			return angular.isDefined(window.webkitStorageInfo);
+		},
 		getCurrentUsage: function() {
 			var def = $q.defer();
 			
