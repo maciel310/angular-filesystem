@@ -215,9 +215,11 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 					fileEntry.file(function(file) {
 						safeResolve(def, file);
 					}, function(e) {
-						safeReject(def, {text: "Error creating file", obj: e});
+						safeReject(def, {text: "Error getting file object", obj: e});
 					});
-				});
+				}, function(e) {
+					safeReject(def, {text: "Error getting file", obj: e});
+                                });
 			}, function(err) {
 				def.reject(err);
 			});
