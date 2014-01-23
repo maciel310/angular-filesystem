@@ -40,7 +40,7 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 			
 			return def.promise;
 		},
-		requestQuotaIncrease: function(newQuotaMB) {
+		requestQuota: function(newQuotaMB) {
 			var def = $q.defer();
 			
 			window.webkitStorageInfo.requestQuota(window.PERSISTENT, newQuotaMB*1024*1024, function(grantedBytes) {
@@ -270,7 +270,10 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 			return def.promise;
 		}
 	};
-	
+
+	// Keep old name for backwards compatibility
+	fileSystem.requestQuotaIncrease = fileSystem.requestQuota;
+
 	return fileSystem;
 }]);
 

@@ -41,7 +41,7 @@ angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($sc
 	};
 	
 	$scope.requestIncrease = function() {
-		fileSystem.requestQuotaIncrease(150).then(function(newQuota) {
+		fileSystem.requestQuota(150).then(function(newQuota) {
 			$scope.messages.push("New quota: " + (newQuota/1024/1024) + "mb");
 		}, function(err) {
 			console.log(err);
