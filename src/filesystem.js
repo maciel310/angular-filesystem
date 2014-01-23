@@ -18,17 +18,22 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 		});
 	}
 
-	window.webkitStorageInfo.requestQuota(window.PERSISTENT, DEFAULT_QUOTA_MB*1024*1024, function(grantedBytes) {
-		window.webkitRequestFileSystem(window.PERSISTENT, grantedBytes, function(fs) {
-			safeResolve(fsDefer, fs);
-		}, function(e){
-			safeReject(fsDefer, {text: "Error requesting File System access", obj: e});
+	if (angular.isDefined(window.webkitStorageInfo)) {
+		window.webkitStorageInfo.requestQuota(window.PERSISTENT, DEFAULT_QUOTA_MB*1024*1024, function(grantedBytes) {
+			window.webkitRequestFileSystem(window.PERSISTENT, grantedBytes, function(fs) {
+				safeResolve(fsDefer, fs);
+			}, function(e){
+				safeReject(fsDefer, {text: "Error requesting File System access", obj: e});
+			});
+		}, function(e) {
+			safeReject(fsDefer, {text: "Error requesting Quota", obj: e});
 		});
-	}, function(e) {
-		safeReject(fsDefer, {text: "Error requesting Quota", obj: e});
-	});
+	}
 	
 	var fileSystem = {
+		isSupported: function() {
+			return angular.isDefined(window.webkitStorageInfo);
+		},
 		getCurrentUsage: function() {
 			var def = $q.defer();
 			
@@ -204,6 +209,26 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 				def.reject(err);
 			});
 			
+			return def.promise;
+		},
+		getFile: function(fileName) {
+			var def = $q.defer();
+
+			fsDefer.promise.then(function(fs) {
+				fs.root.getFile(fileName, {}, function(fileEntry) {
+					// Get a File object representing the file,
+					fileEntry.file(function(file) {
+						safeResolve(def, file);
+					}, function(e) {
+						safeReject(def, {text: "Error getting file object", obj: e});
+					});
+				}, function(e) {
+					safeReject(def, {text: "Error getting file", obj: e});
+                                });
+			}, function(err) {
+				def.reject(err);
+			});
+
 			return def.promise;
 		},
 		readFile: function(fileName, returnType) {
