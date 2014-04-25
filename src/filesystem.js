@@ -214,17 +214,28 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 		getFile: function(fileName) {
 			var def = $q.defer();
 
+			this.getFileEntry(fileName).then(function(fileEntry) {
+				// Get a File object representing the file,
+				fileEntry.file(function(file) {
+					safeResolve(def, file);
+				}, function(e) {
+					safeReject(def, {text: "Error getting file object", obj: e});
+				});
+			}, function(err) {
+				def.reject(err);
+			});
+			
+			return def.promise;
+		},
+		getFileEntry: function(fileName) {
+			var def = $q.defer();
+
 			fsDefer.promise.then(function(fs) {
 				fs.root.getFile(fileName, {}, function(fileEntry) {
-					// Get a File object representing the file,
-					fileEntry.file(function(file) {
-						safeResolve(def, file);
-					}, function(e) {
-						safeReject(def, {text: "Error getting file object", obj: e});
-					});
+					safeResolve(def, fileEntry);
 				}, function(e) {
 					safeReject(def, {text: "Error getting file", obj: e});
-                                });
+							});
 			}, function(err) {
 				def.reject(err);
 			});
