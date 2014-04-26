@@ -93,7 +93,7 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 			
 			function createDir(rootDir, folders) {
 				rootDir.getDirectory(folders[0], {create: true}, function(dirEntry) {
-					if (folders.length) {
+					if (folders.length > 1) {
 						createDir(dirEntry, folders.slice(1));
 					} else {
 						safeResolve(def, dirEntry);
