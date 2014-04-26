@@ -20,11 +20,20 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 
 	if (angular.isDefined(window.webkitStorageInfo)) {
 		window.webkitStorageInfo.requestQuota(window.PERSISTENT, DEFAULT_QUOTA_MB*1024*1024, function(grantedBytes) {
-			window.webkitRequestFileSystem(window.PERSISTENT, grantedBytes, function(fs) {
-				safeResolve(fsDefer, fs);
-			}, function(e){
-				safeReject(fsDefer, {text: "Error requesting File System access", obj: e});
-			});
+			var theRequest = function() {
+				window.requestFileSystem = window.webkitRequestFileSystem || window.requestFileSystem;
+				window.requestFileSystem(window.PERSISTENT, grantedBytes, function(fs) {
+					safeResolve(fsDefer, fs);
+				}, function(e){
+					safeReject(fsDefer, {text: "Error requesting File System access", obj: e});
+				});
+			}
+			if(window.cordova) {
+				document.addEventListener('deviceready', theRequest, false);
+			}
+			else {
+				theRequest.apply(this);
+			}
 		}, function(e) {
 			safeReject(fsDefer, {text: "Error requesting Quota", obj: e});
 		});
