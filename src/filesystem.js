@@ -70,20 +70,31 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 			
 			return def.promise;
 		},
-		getFolderContents: function(dir) {
+		getFolderContents: function(path) {
+			//remove leading slash if present
+			path = path.replace(/^\//, "");
+
 			var def = $q.defer();
-			
-			fsDefer.promise.then(function(fs) {
-				fs.root.getDirectory(fs.root.fullPath + dir, {}, function(dirEntry) {
+
+			function getContent(rootDir, folders) {
+				rootDir.getDirectory(folders[0], {}, function(dirEntry) {
 					var dirReader = dirEntry.createReader();
-					dirReader.readEntries(function(entries) {
-						safeResolve(def, entries);
-					}, function(e) {
-						safeReject(def, {text: "Error reading entries", obj: e});
-					});
+					if (folders.length > 1) {
+						getContent(dirEntry, folders.slice(1));
+					} else {
+						dirReader.readEntries(function(entries) {
+							safeResolve(def, entries);
+						}, function(e) {
+							safeReject(def, {text: "Error reading entries", obj: e});
+						});
+					}
 				}, function(e) {
 					safeReject(def, {text: "Error getting directory", obj: e});
 				});
+			}
+
+			fsDefer.promise.then(function(fs) {
+				getContent(fs.root, path.split('/'));
 			}, function(err) {
 				def.reject(err);
 			});
