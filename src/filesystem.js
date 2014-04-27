@@ -18,27 +18,32 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 		});
 	}
 
-	if (angular.isDefined(window.webkitStorageInfo)) {
-		window.webkitStorageInfo.requestQuota(window.PERSISTENT, DEFAULT_QUOTA_MB*1024*1024, function(grantedBytes) {
-			var theRequest = function() {
-				window.requestFileSystem = window.webkitRequestFileSystem || window.requestFileSystem;
-				window.requestFileSystem(window.PERSISTENT, grantedBytes, function(fs) {
-					safeResolve(fsDefer, fs);
-				}, function(e){
-					safeReject(fsDefer, {text: "Error requesting File System access", obj: e});
-				});
-			}
-			if(window.cordova) {
-				document.addEventListener('deviceready', theRequest, false);
-			}
-			else {
-				theRequest.apply(this);
-			}
-		}, function(e) {
-			safeReject(fsDefer, {text: "Error requesting Quota", obj: e});
-		});
+	var self = this;
+	window.webkitStorageInfo = window.webkitStorageInfo || {
+		requestQuota: function(type, bytes, successFn, errorFn) {
+			successFn.apply(self, [0]);
+		}
 	}
-	
+	var requestFsFn = function(bytes) {
+		window.requestFileSystem = window.webkitRequestFileSystem || window.requestFileSystem;
+		window.requestFileSystem(window.PERSISTENT, bytes, function(fs) {
+			safeResolve(fsDefer, fs);
+		}, function(e){
+			safeReject(fsDefer, {text: "Error requesting File System access", obj: e});
+		});
+	};
+
+	window.webkitStorageInfo.requestQuota(window.PERSISTENT, DEFAULT_QUOTA_MB*1024*1024, function(grantedBytes) {
+		if(window.cordova) {
+			document.addEventListener('deviceready', function() { requestFsFn.apply(self, [grantedBytes]); }, false);
+		}
+		else {
+			requestFsFn.apply(this, [grantedBytes]);
+		}
+	}, function(e) {
+		safeReject(fsDefer, {text: "Error requesting Quota", obj: e});
+	});
+
 	var fileSystem = {
 		isSupported: function() {
 			return angular.isDefined(window.webkitStorageInfo);
