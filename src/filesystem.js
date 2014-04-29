@@ -235,7 +235,7 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 					safeResolve(def, fileEntry);
 				}, function(e) {
 					safeReject(def, {text: "Error getting file", obj: e});
-							});
+				});
 			}, function(err) {
 				def.reject(err);
 			});
