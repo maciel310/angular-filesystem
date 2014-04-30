@@ -5,6 +5,13 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 	
 	var DEFAULT_QUOTA_MB = 0;
 	
+	window.requestFileSystem = window.webkitRequestFileSystem || window.requestFileSystem;
+	window.webkitStorageInfo = window.webkitStorageInfo || {
+		requestQuota: function(type, bytes, successFn, errorFn) {
+			successFn(0);
+		}
+	}
+	
 	//wrap resolve/reject in an empty $timeout so it happens within the Angular call stack
 	//easier than .apply() since no scope is needed and doesn't error if already within an apply
 	function safeResolve(deferral, message) {
@@ -18,14 +25,7 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 		});
 	}
 
-	var self = this;
-	window.webkitStorageInfo = window.webkitStorageInfo || {
-		requestQuota: function(type, bytes, successFn, errorFn) {
-			successFn.apply(self, [0]);
-		}
-	}
 	var requestFsFn = function(bytes) {
-		window.requestFileSystem = window.webkitRequestFileSystem || window.requestFileSystem;
 		window.requestFileSystem(window.PERSISTENT, bytes, function(fs) {
 			safeResolve(fsDefer, fs);
 		}, function(e){
@@ -35,15 +35,14 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 
 	window.webkitStorageInfo.requestQuota(window.PERSISTENT, DEFAULT_QUOTA_MB*1024*1024, function(grantedBytes) {
 		if(window.cordova) {
-			document.addEventListener('deviceready', function() { requestFsFn.apply(self, [grantedBytes]); }, false);
-		}
-		else {
-			requestFsFn.apply(this, [grantedBytes]);
+			document.addEventListener('deviceready', function() { requestFsFn(grantedBytes); }, false);
+		} else {
+			requestFsFn(grantedBytes);
 		}
 	}, function(e) {
 		safeReject(fsDefer, {text: "Error requesting Quota", obj: e});
 	});
-
+	
 	var fileSystem = {
 		isSupported: function() {
 			return angular.isDefined(window.webkitStorageInfo);
