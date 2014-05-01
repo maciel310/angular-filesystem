@@ -4,6 +4,8 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 	var fsDefer = $q.defer();
 	
 	var DEFAULT_QUOTA_MB = 0;
+
+	window.resolveLocalFileSystemURL  = window.resolveLocalFileSystemURL || window.webkitResolveLocalFileSystemURL;
 	
 	//wrap resolve/reject in an empty $timeout so it happens within the Angular call stack
 	//easier than .apply() since no scope is needed and doesn't error if already within an apply
@@ -239,6 +241,30 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 			}, function(err) {
 				def.reject(err);
 			});
+
+			return def.promise;
+		},
+		/**
+		 * @param  String Local filesystem URL.
+		 * @return Object Promise with a File argument.
+		 */
+		getFileFromLocalFileSystemURL: function(url) {
+			var def = $q.defer();
+			window.resolveLocalFileSystemURL(
+				url,
+				function(fileEntry) {
+					fileEntry.file(
+						function(file) {
+							safeResolve(def, file);
+						}, function(e) {
+							safeReject(def, {text: "Error getting file object", obj: e});
+						}
+					);
+				},
+				function(err) {
+					safeReject(def, err);
+				}
+			);
 
 			return def.promise;
 		},
