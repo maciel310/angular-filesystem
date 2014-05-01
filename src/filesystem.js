@@ -261,8 +261,8 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 						}
 					);
 				},
-				function(err) {
-					safeReject(def, err);
+				function(e) {
+					safeReject(def, {text: "Error resolving FileSystem URL", obj: e});
 				}
 			);
 
