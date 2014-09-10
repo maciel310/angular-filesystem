@@ -8,7 +8,7 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 	window.requestFileSystem = window.webkitRequestFileSystem || window.requestFileSystem;
 	window.webkitStorageInfo = window.webkitStorageInfo || {
 		requestQuota: function(type, bytes, successFn, errorFn) {
-			successFn(0);
+			errorFn(new Error("Not implemented"));
 		}
 	}
 	
