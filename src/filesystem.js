@@ -7,6 +7,13 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 
 	window.resolveLocalFileSystemURL  = window.resolveLocalFileSystemURL || window.webkitResolveLocalFileSystemURL;
 	
+	window.requestFileSystem = window.webkitRequestFileSystem || window.requestFileSystem;
+	window.webkitStorageInfo = window.webkitStorageInfo || {
+		requestQuota: function(type, bytes, successFn, errorFn) {
+			errorFn(new Error("Not implemented"));
+		}
+	}
+	
 	//wrap resolve/reject in an empty $timeout so it happens within the Angular call stack
 	//easier than .apply() since no scope is needed and doesn't error if already within an apply
 	function safeResolve(deferral, message) {
@@ -20,17 +27,23 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 		});
 	}
 
-	if (angular.isDefined(window.webkitStorageInfo)) {
-		window.webkitStorageInfo.requestQuota(window.PERSISTENT, DEFAULT_QUOTA_MB*1024*1024, function(grantedBytes) {
-			window.webkitRequestFileSystem(window.PERSISTENT, grantedBytes, function(fs) {
-				safeResolve(fsDefer, fs);
-			}, function(e){
-				safeReject(fsDefer, {text: "Error requesting File System access", obj: e});
-			});
-		}, function(e) {
-			safeReject(fsDefer, {text: "Error requesting Quota", obj: e});
+	var requestFsFn = function(bytes) {
+		window.requestFileSystem(window.PERSISTENT, bytes, function(fs) {
+			safeResolve(fsDefer, fs);
+		}, function(e){
+			safeReject(fsDefer, {text: "Error requesting File System access", obj: e});
 		});
-	}
+	};
+
+	window.webkitStorageInfo.requestQuota(window.PERSISTENT, DEFAULT_QUOTA_MB*1024*1024, function(grantedBytes) {
+		if(window.cordova) {
+			document.addEventListener('deviceready', function() { requestFsFn(grantedBytes); }, false);
+		} else {
+			requestFsFn(grantedBytes);
+		}
+	}, function(e) {
+		safeReject(fsDefer, {text: "Error requesting Quota", obj: e});
+	});
 	
 	var fileSystem = {
 		isSupported: function() {
@@ -58,20 +71,31 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 			
 			return def.promise;
 		},
-		getFolderContents: function(dir) {
+		getFolderContents: function(path) {
+			//remove leading slash if present
+			path = path.replace(/^\//, "");
+
 			var def = $q.defer();
-			
-			fsDefer.promise.then(function(fs) {
-				fs.root.getDirectory(fs.root.fullPath + dir, {}, function(dirEntry) {
+
+			function getContent(rootDir, folders) {
+				rootDir.getDirectory(folders[0], {}, function(dirEntry) {
 					var dirReader = dirEntry.createReader();
-					dirReader.readEntries(function(entries) {
-						safeResolve(def, entries);
-					}, function(e) {
-						safeReject(def, {text: "Error reading entries", obj: e});
-					});
+					if (folders.length > 1) {
+						getContent(dirEntry, folders.slice(1));
+					} else {
+						dirReader.readEntries(function(entries) {
+							safeResolve(def, entries);
+						}, function(e) {
+							safeReject(def, {text: "Error reading entries", obj: e});
+						});
+					}
 				}, function(e) {
 					safeReject(def, {text: "Error getting directory", obj: e});
 				});
+			}
+
+			fsDefer.promise.then(function(fs) {
+				getContent(fs.root, path.split('/'));
 			}, function(err) {
 				def.reject(err);
 			});
@@ -86,7 +110,7 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 			
 			function createDir(rootDir, folders) {
 				rootDir.getDirectory(folders[0], {create: true}, function(dirEntry) {
-					if (folders.length) {
+					if (folders.length > 1) {
 						createDir(dirEntry, folders.slice(1));
 					} else {
 						safeResolve(def, dirEntry);
