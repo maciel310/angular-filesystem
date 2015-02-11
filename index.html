@@ -3,7 +3,7 @@
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 	<title>angular-filesystem testbed</title>
-	<script type='text/javascript' src="http://code.angularjs.org/angular-1.0.1.js"></script>
+	<script type='text/javascript' src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.12/angular.js"></script>
 	<script type='text/javascript' src="src/filesystem.js"></script>
 	
 <script type='text/javascript'>//<![CDATA[ 
@@ -173,7 +173,7 @@ angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($sc
 			<button ng-click='saveFileInput()'>Save to FS</button>
 		</div>
 		
-		<div ng-repeat="message in messages">{{message}}</div>
+		<div ng-repeat="message in messages track by $index">{{message}}</div>
 	</div>
 	
 	<div style='display: inline-block; vertical-align: top; width: 35%'>
