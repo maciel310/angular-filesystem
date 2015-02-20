@@ -245,7 +245,7 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 				fileEntry.file(function(file) {
 					safeResolve(def, file);
 				}, function(e) {
-					safeReject(def, {text: "Error getting file object", obj: e});
+					safeReject(def, {text: "Error getting file object", obj: e, fileName: fileName});
 				});
 			}, function(err) {
 				def.reject(err);
@@ -260,7 +260,7 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 				fs.root.getFile(fileName, {}, function(fileEntry) {
 					safeResolve(def, fileEntry);
 				}, function(e) {
-					safeReject(def, {text: "Error getting file", obj: e});
+					safeReject(def, {text: "Error getting file", obj: e, fileName: fileName});
 				});
 			}, function(err) {
 				def.reject(err);
