@@ -12,7 +12,7 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 		requestQuota: function(type, bytes, successFn, errorFn) {
 			errorFn(new Error("Not implemented"));
 		}
-	}
+	};
 	
 	//wrap resolve/reject in an empty $timeout so it happens within the Angular call stack
 	//easier than .apply() since no scope is needed and doesn't error if already within an apply
