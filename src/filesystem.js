@@ -8,7 +8,7 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 	window.resolveLocalFileSystemURL  = window.resolveLocalFileSystemURL || window.webkitResolveLocalFileSystemURL;
 	
 	window.requestFileSystem = window.webkitRequestFileSystem || window.requestFileSystem;
-	window.webkitStorageInfo = window.webkitStorageInfo || {
+	navigator.webkitPersistentStorage = navigator.webkitPersistentStorage || {
 		requestQuota: function(type, bytes, successFn, errorFn) {
 			errorFn(new Error("Not implemented"));
 		}
@@ -35,7 +35,7 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 		});
 	};
 
-	window.webkitStorageInfo.requestQuota(window.PERSISTENT, DEFAULT_QUOTA_MB*1024*1024, function(grantedBytes) {
+	navigator.webkitPersistentStorage.requestQuota(DEFAULT_QUOTA_MB*1024*1024, function(grantedBytes) {
 		if(window.cordova) {
 			document.addEventListener('deviceready', function() { requestFsFn(grantedBytes); }, false);
 		} else {
@@ -52,7 +52,7 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 		getCurrentUsage: function() {
 			var def = $q.defer();
 			
-			webkitStorageInfo.queryUsageAndQuota(window.PERSISTENT, function(used, quota) {
+			navigator.webkitPersistentStorage.queryUsageAndQuota(function(used, quota) {
 				safeResolve(def, {'used': used, 'quota': quota});
 			}, function(e) {
 				safeReject(def, {text: "Error getting quota information", obj: e});
@@ -63,7 +63,7 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 		requestQuota: function(newQuotaMB) {
 			var def = $q.defer();
 			
-			window.webkitStorageInfo.requestQuota(window.PERSISTENT, newQuotaMB*1024*1024, function(grantedBytes) {
+			navigator.webkitPersistentStorage.requestQuota(newQuotaMB*1024*1024, function(grantedBytes) {
 				safeResolve(def, grantedBytes);
 			}, function(e) {
 				safeReject(def, {text: "Error requesting quota increase", obj: e});
