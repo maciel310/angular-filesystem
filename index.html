@@ -8,7 +8,7 @@
 	
 <script type='text/javascript'>//<![CDATA[ 
 
-angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($scope, $window, $timeout, $q, fileSystem) {
+angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($scope, $window, $timeout, $q, $http, fileSystem) {
 	$scope.messages = ['Click a button'];
 	
 	var txtFileName = "msg2.txt";
@@ -106,28 +106,25 @@ angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($sc
 	
 	$scope.cacheFile = function(url) {
 		var filename = url.substr(url.lastIndexOf('/')+1);
-		var path = url.substr(0, url.lastIndexOf('/')+1);
+		var path = 'test/';
 		
 		var createFolderPromise = fileSystem.createFolder(path);
 		
-		var xhr =new XMLHttpRequest();
-		xhr.open('GET',url,true);
-		xhr.responseType ='arraybuffer';
-		
-		xhr.onload=function(e){
-			$timeout(function() {
+		$http.get(url, {responseType: 'arraybuffer'})
+			.success(function(res, status, header, config) {
 				createFolderPromise.then(function() {
-					return fileSystem.writeArrayBuffer(url, xhr.response, "audio/mpeg");
+					return fileSystem.writeArrayBuffer(path + filename, res, 'image/jpeg');
 				}).then(function() {
-					$scope.messages.push("Cached file");
+					$scope.messages.push('Cached file');
 				}, function(err) {
 					console.log(err);
 					$window.alert(err.text);
 				});
+			})
+			.error(function(res, status, header, config) {
+				console.log('Failed to cache file: Status ' + status);
+				$window.alert('Failed to cache file: Status ' + status);
 			});
-		};
-		
-		xhr.send();
 	};
 	
 	$scope.saveFileInput = function() {
@@ -163,7 +160,7 @@ angular.module('myApp', ['fileSystem']).controller('MyCtrl', function MyCtrl($sc
 			<button ng-click='requestIncrease()'>Request Increase</button>
 			<button ng-click='getFiles("/")'>Show File List</button>
 			<button ng-click='deleteFile("/msg2.txt")'>Delete File</button>
-			<button ng-click='cacheFile("/bumper-board/know.mp3")'>Cache File</button>
+			<button ng-click='cacheFile("http://i.imgur.com/ptRCZYA.jpg")'>Cache File</button>
 			<button ng-click='createFolder("documents/blah/")'>Create Folders</button>
 			<button ng-click='deleteFolder("documents/", true)'>Delete Folder</button>
 			<button ng-click='clearFS()'>Clear Local Filesystem</button>
