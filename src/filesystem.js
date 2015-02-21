@@ -9,7 +9,7 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 	
 	window.requestFileSystem = window.webkitRequestFileSystem || window.requestFileSystem;
 	navigator.webkitPersistentStorage = navigator.webkitPersistentStorage || {
-		requestQuota: function(type, bytes, successFn, errorFn) {
+		requestQuota: function(bytes, successFn, errorFn) {
 			errorFn(new Error("Not implemented"));
 		}
 	};
